@@ -111,12 +111,3 @@ class Audience:
             )
         print(self.users)
         return self
-
-
-users = [i + 1 for i in range(10000)]
-audience = Audience(users=users)
-audience.assign_groups()
-
-for i in audience.users:
-    print(i.group)
-    break

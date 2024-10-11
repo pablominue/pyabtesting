@@ -6,6 +6,7 @@ from typing import Any, Literal, Optional, Union
 import pandas as pd
 from pydantic.main import BaseModel
 from scipy.stats import norm
+from functools import total_ordering
 
 
 def asign_group_from_uuid(uuid: uuid.UUID, control_threshold) -> str:
@@ -54,7 +55,7 @@ def calculate_sample_size(
 
     return control_group_size, test_group_size, required_sample_size_per_group
 
-
+@total_ordering
 class User(BaseModel):
     identifier: Any
     uuid: uuid.UUID
@@ -65,26 +66,43 @@ class User(BaseModel):
         return str(self.uuid)
 
     def __eq__(self, other: "User") -> bool:
-        return self.uuid == other.uuid
+        return (self.uuid == other.uuid) and (self.group == other.group)
+    
+    def __gt__(self, other) -> bool:
+        return self.group == 'test' and other.group == 'control'
 
 
 class Audience:
 
-    def __init__(self, users: Union[list[Any] | pd.Series]) -> None:
+    def __init__(self, users: Union[list[Any] | pd.Series], group_mapping: Optional[dict[Any, Literal['test', 'control']]]) -> None:
         if isinstance(users, pd.Series):
             self.users = users.to_list()
         if isinstance(users, list):
             self.users = users
         else:
-            raise TypeError
+            raise TypeError(f"{type(users)} not supported")
 
         self.users: list[User] = [
             User(identifier=user, uuid=uuid.uuid4()) for user in self.users
         ]
+        if group_mapping:
+            map(lambda x: setattr(x, 'group', group_mapping.get(x)), self.users)
 
     def __len__(self) -> Union[float, int]:
         return len(self.users)
-
+    
+    def __dict__(self) -> dict:
+        return {u.uuid: u.group for u in self.users}
+    
+    def __str__(self) -> str:
+        return str(self.__dict__())
+    
+    def __sizeof__(self) -> int:
+        return len(self.users)
+    
+    def __getitem__(self, item):
+        return self.users[item]
+    
     def assign_groups(
         self,
         baseline_conversion_rate=0,
@@ -109,5 +127,5 @@ class Audience:
             u.group = asign_group_from_uuid(
                 u.uuid, control_threshold=control_group_ratio
             )
-        print(self.users)
+        self.users = sorted(self.users)
         return self

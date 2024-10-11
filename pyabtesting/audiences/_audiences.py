@@ -1,12 +1,15 @@
 import hashlib
 import math
 import uuid
+from functools import total_ordering
 from typing import Any, Literal, Optional, Union
 
 import pandas as pd
 from pydantic.main import BaseModel
 from scipy.stats import norm
-from functools import total_ordering
+from pyabtesting._utils.log import PabLog
+
+lg = PabLog(__name__)
 
 
 def asign_group_from_uuid(uuid: uuid.UUID, control_threshold) -> str:
@@ -55,6 +58,7 @@ def calculate_sample_size(
 
     return control_group_size, test_group_size, required_sample_size_per_group
 
+
 @total_ordering
 class User(BaseModel):
     identifier: Any
@@ -65,16 +69,29 @@ class User(BaseModel):
     def __str__(self) -> str:
         return str(self.uuid)
 
-    def __eq__(self, other: "User") -> bool:
-        return (self.uuid == other.uuid) and (self.group == other.group)
-    
+    def __key(self) -> Any:
+        return (self.uuid, self.group)
+
+    def __hash__(self) -> int:
+        return hash(self.__key())
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, User):
+            return self.__key() == other.__key()
+        else:
+            return NotImplemented
+
     def __gt__(self, other) -> bool:
-        return self.group == 'test' and other.group == 'control'
+        return self.group == "test" and other.group == "control"
 
 
 class Audience:
 
-    def __init__(self, users: Union[list[Any] | pd.Series], group_mapping: Optional[dict[Any, Literal['test', 'control']]]) -> None:
+    def __init__(
+        self,
+        users: Union[list[Any] | pd.Series],
+        group_mapping: Optional[dict[Any, Literal["test", "control"]]] = None,
+    ) -> None:
         if isinstance(users, pd.Series):
             self.users = users.to_list()
         if isinstance(users, list):
@@ -86,23 +103,12 @@ class Audience:
             User(identifier=user, uuid=uuid.uuid4()) for user in self.users
         ]
         if group_mapping:
-            map(lambda x: setattr(x, 'group', group_mapping.get(x)), self.users)
+            try:
+                for u in self.users:
+                    u.group = group_mapping.get(u.identifier)
+            except Exception:
+                lg.log.warning("Could not Map the Groups")
 
-    def __len__(self) -> Union[float, int]:
-        return len(self.users)
-    
-    def __dict__(self) -> dict:
-        return {u.uuid: u.group for u in self.users}
-    
-    def __str__(self) -> str:
-        return str(self.__dict__())
-    
-    def __sizeof__(self) -> int:
-        return len(self.users)
-    
-    def __getitem__(self, item):
-        return self.users[item]
-    
     def assign_groups(
         self,
         baseline_conversion_rate=0,
@@ -129,3 +135,18 @@ class Audience:
             )
         self.users = sorted(self.users)
         return self
+
+    def __len__(self) -> Union[float, int]:
+        return len(self.users)
+
+    def __dict__(self) -> dict:
+        return {u.uuid: u.group for u in self.users}
+
+    def __str__(self) -> str:
+        return str(self.__dict__())
+
+    def __sizeof__(self) -> int:
+        return len(self.users)
+
+    def __getitem__(self, item):
+        return self.users[item]

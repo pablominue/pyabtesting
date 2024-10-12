@@ -1,5 +1,5 @@
 import pandas as pd
-from pyabtesting.audiences import Audience
+from abtestools.audiences import Audience
 
 data = pd.read_csv('tests/data.csv')
 

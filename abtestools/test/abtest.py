@@ -4,7 +4,7 @@ import pandas as pd
 from pydantic import BaseModel
 from scipy.stats import ttest_ind
 
-from pyabtesting.audiences import Audience, User
+from abtestools.audiences import Audience, User
 
 
 class Test(BaseModel):

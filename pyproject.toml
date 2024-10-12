@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "abtest"
+name = "abtestools"
 version = "0.1.0"
 description = "AB Test Framework for Python"
 authors = ["Pablo Minué"]

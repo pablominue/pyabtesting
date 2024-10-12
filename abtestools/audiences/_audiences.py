@@ -7,7 +7,7 @@ from typing import Any, Literal, Optional, Union
 import pandas as pd
 from pydantic.main import BaseModel
 from scipy.stats import norm
-from pyabtesting._utils.log import PabLog
+from abtestools._utils.log import PabLog
 
 lg = PabLog(__name__)
 

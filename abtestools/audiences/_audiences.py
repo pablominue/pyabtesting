@@ -63,6 +63,19 @@ def calculate_sample_size(
 
 @total_ordering
 class User(BaseModel):
+    """
+    # User
+    ### Description
+    User type for audiences.
+
+    -----------------
+
+    ### Parameters
+    - uiid: uuid object with an unique identifier for the user
+    - group: group of the ab test the user belongs to (control or test)
+
+
+    """
     identifier: Any
     uuid: uuid.UUID
     group: Literal["test", "control"] = None
@@ -96,10 +109,28 @@ class User(BaseModel):
 
 
 class Audience:
+    """
+    # Audience
+
+    ### Description:
+    An Audience object allows to store the audience users for a given Test, assigning test and control groups
+    to each user and providing them a unique uuid.
+
+    ### Parameters:
+    - users: list with all the identifier of the different users. Identifiers must be unique
+    - group_mapping: In case the group assignment is already done, you can provide a dictionary mapping
+                    each user with its group (only test or control values allowed)
+
+    ### Methods:
+    - assign_groups: This method will automatically assign test and control groups based on the provided 
+        statistical parameters. The control_group ratio parameter will define which percentage of users 
+        should be designed as control group (by default, 10%)
+    - invert_groups: Interchange test and control groups
+    """
 
     def __init__(
         self,
-        users: Union[list[Any] | pd.Series],
+        users: list[Any],
         group_mapping: Optional[dict[Any, Literal["test", "control"]]] = None,
     ) -> None:
         if isinstance(users, pd.Series):

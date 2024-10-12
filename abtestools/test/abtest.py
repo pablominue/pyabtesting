@@ -7,6 +7,19 @@ from scipy.stats import ttest_ind
 from abtestools.audiences import Audience, User
 
 class TestResult(BaseModel):
+    """
+    # TestResult
+    Results of a statistical test
+
+    ### Parameters
+        - total_test_metric: float
+        - total_control_metric: float
+        - test_metric_per_user: float
+        - control_metric_per_user: float
+        - relative_uplift: float
+        - absolute_uplift: float
+        - metric_driven_by_test: float
+    """
     total_test_metric: float
     total_control_metric: float
     test_metric_per_user: float
@@ -16,6 +29,23 @@ class TestResult(BaseModel):
     metric_driven_by_test: float
 
 class Test:
+    """
+    # Test
+    ### Description
+    Statistical AB test, that will provide tools to calculate statistical significance, uplift and other useful metrics
+
+    ### Parameters
+        - audience: <a style="color:#FF0000">Audience</a> object containing the users involved in the test
+        - metric: Specify if the metric is discrete (1 or 0 values per user) or continuous.
+        - data: dictionary containing the identifiers of the user as key and the value of the metric as value. If instead
+            of using the original identifier you use the audience uuid, use the **use_uuid** parameter in the methods of 
+            this class.
+
+    ### Methods
+    - significance: Returns a touple with the p-value, the statistic and the confidence interval
+    - invert_audience_groups: Inverts test and holdout groups on the audience
+    - test_results: returns a 'TestResult' object
+    """
     def __init__(
         self,
         audience: Audience,

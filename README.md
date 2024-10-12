@@ -217,7 +217,7 @@ Use this space to list resources you find helpful and would like to give credit 
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]:https://img.shields.io/github/contributors/pablominue/pyabtestingstyle=for-the-badge
+[contributors-shield]:https://img.shields.io/github/contributors/pablominue/pyabtesting
 [contributors-url]: https://github.com/pablominue/pyabtesting/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/pablominue/pyabtesting.svg?style=for-the-badge
 [forks-url]: https://github.com/pablominue/pyabtesting/network/members

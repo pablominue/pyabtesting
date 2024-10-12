@@ -7,6 +7,7 @@ from typing import Any, Literal, Optional, Union
 import pandas as pd
 from pydantic.main import BaseModel
 from scipy.stats import norm
+
 from abtestools._utils.log import PabLog
 
 lg = PabLog(__name__)
@@ -21,6 +22,7 @@ def asign_group_from_uuid(uuid: uuid.UUID, control_threshold) -> str:
         return "control"
     else:
         return "test"
+    
 
 
 def calculate_sample_size(
@@ -65,6 +67,14 @@ class User(BaseModel):
     uuid: uuid.UUID
     group: Literal["test", "control"] = None
     __isset: bool = False
+
+    def reverse_group(self) -> 'User':
+        if self.group == 'test':
+            self.group = 'control'
+        if self.group =='control':
+            self.group = 'test'
+
+        return self
 
     def __str__(self) -> str:
         return str(self.uuid)
@@ -135,6 +145,9 @@ class Audience:
             )
         self.users = sorted(self.users)
         return self
+
+    def invert_groups(self) -> 'Audience':
+        self.users = list(map(lambda x: x.reverse_group), self.users)
 
     def __len__(self) -> Union[float, int]:
         return len(self.users)

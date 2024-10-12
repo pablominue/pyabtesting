@@ -1,1 +1,1 @@
-from ._audiences import Audience, User
+from abtestools.audiences._audiences import Audience, User

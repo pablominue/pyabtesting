@@ -15,7 +15,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/pablominue/pyabtesting">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/abtestools.jpg" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">pyabtesting</h3>
@@ -91,10 +91,10 @@ To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
+To develop on this project, you will need to create a poetry environment with the needed dependencies
 * npm
   ```sh
-  npm install npm@latest -g
+  poetry install
   ```
 
 ### Installation

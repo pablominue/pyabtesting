@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "abtestools"
-version = "1.0.2"
+version = "1.0.3"
 description = "AB Test Framework for Python"
 authors = ["Pablo Minué"]
 license = "MIT"

@@ -2,7 +2,7 @@ import hashlib
 import math
 import uuid
 from functools import total_ordering
-from typing import Any, Literal, Optional, Union
+from typing import Any, Iterable, Literal, Optional, Union
 
 import pandas as pd
 from pydantic.main import BaseModel
@@ -130,18 +130,12 @@ class Audience:
 
     def __init__(
         self,
-        users: list[Any],
+        users: Iterable[Any],
         group_mapping: Optional[dict[Any, Literal["test", "control"]]] = None,
     ) -> None:
-        if isinstance(users, pd.Series):
-            self.users = users.to_list()
-        if isinstance(users, list):
-            self.users = users
-        else:
-            raise TypeError(f"{type(users)} not supported")
 
         self.users: list[User] = [
-            User(identifier=user, uuid=uuid.uuid4()) for user in self.users
+            User(identifier=user, uuid=uuid.uuid4()) for user in users
         ]
         if group_mapping:
             try:

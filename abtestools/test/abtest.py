@@ -102,34 +102,20 @@ class Test:
         identifier = "uuid" if use_uuid else "identifier"
         if not isinstance(list(self.data.keys())[0], str):
             self.data = {str(k): v for k, v in self.data.items()}
-        test_data = {
-            k: v
-            for k, v in self.data.items()
-            if k in list(map(lambda x: getattr(x, identifier), test))
-        }
-        control_data = {
-            k: v
-            for k, v in self.data.items()
-            if k in list(map(lambda x: getattr(x, identifier), control))
-        }
-        df = pd.concat(
-            [
-                pd.DataFrame(
-                    {
-                        "user_id": test_data.keys(),
-                        "metric": test_data.values(),
-                        "group": ["test" for i in range(len(test_data))],
-                    }
-                ),
-                pd.DataFrame(
-                    {
-                        "user_id": control_data.keys(),
-                        "metric": control_data.values(),
-                        "group": ["control" for i in range(len(control_data))],
-                    }
-                ),
-            ]
+
+        test_data = pd.DataFrame({"user_id": [*test]})
+        test_data["group"] = "test"
+        test_data["user_id"] = (
+            test_data["user_id"].apply(lambda x: getattr(x, identifier)).astype(str)
         )
+        test_data["metric"] = test_data["user_id"].map(self.data)
+        control_data = pd.DataFrame({"user_id": [*control]})
+        control_data["group"] = "control"
+        control_data["user_id"] = (
+            control_data["user_id"].apply(lambda x: getattr(x, identifier)).astype(str)
+        )
+        control_data["metric"] = control_data["user_id"].map(self.data)
+        df = pd.concat([test_data, control_data])
 
         test_users = len(df.loc[df.group == "test"])
         control_users = len(df.loc[df.group == "control"])

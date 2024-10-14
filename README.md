@@ -65,6 +65,52 @@ This library provides tools for AB Testing, very useful when working with market
 
 
 
+## Implementation
+
+```python
+import datetime
+
+import pandas as pd
+
+from abtestools.audiences import Audience
+from abtestools.campaign import Campaign
+from abtestools.test import Metric, Test
+
+data = pd.read_csv("tests/cookie_cats.txt", delimiter=",")
+data["version"] = data["version"].map({"gate_30": "control", "gate_40": "test"})
+print(data.groupby("version")["retention_1"].sum())
+
+audience = Audience(
+    users=data["userid"], group_mapping=dict(zip(data["userid"], data["version"]))
+)
+
+campaign = Campaign(
+    audience=audience,
+    metrics=[
+        Metric(name="retention_1", type="discrete"),
+        Metric(name="retention_7", type="discrete"),
+    ],
+    date_range=[
+        datetime.datetime.today() - datetime.timedelta(days=x) for x in range(10)
+    ],
+)
+
+
+def extract_data(date, metric_column: str, convert_bool: bool = True) -> dict:
+    if convert_bool:
+        data[metric_column] = data[metric_column].astype(int)
+    return dict(zip(data["userid"], data[metric_column]))
+
+
+for res in campaign.backfill(
+    metric=Metric(name="retention_1", type="discrete"),
+    extract_data=extract_data,
+    metric_column="retention_1",
+):
+    print(res)
+
+```
+
 <!-- GETTING STARTED -->
 ## Getting Started
 

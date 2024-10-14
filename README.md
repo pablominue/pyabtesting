@@ -65,52 +65,6 @@ This library provides tools for AB Testing, very useful when working with market
 
 
 
-## Implementation
-
-```python
-import datetime
-
-import pandas as pd
-
-from abtestools.audiences import Audience
-from abtestools.campaign import Campaign
-from abtestools.test import Metric, Test
-
-data = pd.read_csv("tests/cookie_cats.txt", delimiter=",")
-data["version"] = data["version"].map({"gate_30": "control", "gate_40": "test"})
-print(data.groupby("version")["retention_1"].sum())
-
-audience = Audience(
-    users=data["userid"], group_mapping=dict(zip(data["userid"], data["version"]))
-)
-
-campaign = Campaign(
-    audience=audience,
-    metrics=[
-        Metric(name="retention_1", type="discrete"),
-        Metric(name="retention_7", type="discrete"),
-    ],
-    date_range=[
-        datetime.datetime.today() - datetime.timedelta(days=x) for x in range(10)
-    ],
-)
-
-
-def extract_data(date, metric_column: str, convert_bool: bool = True) -> dict:
-    if convert_bool:
-        data[metric_column] = data[metric_column].astype(int)
-    return dict(zip(data["userid"], data[metric_column]))
-
-
-for res in campaign.backfill(
-    metric=Metric(name="retention_1", type="discrete"),
-    extract_data=extract_data,
-    metric_column="retention_1",
-):
-    print(res)
-
-```
-
 <!-- GETTING STARTED -->
 ## Getting Started
 
@@ -147,12 +101,49 @@ To develop on this project, you will need to create a poetry environment with th
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+```python
+import datetime
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+import pandas as pd
 
+from abtestools.audiences import Audience
+from abtestools.campaign import Campaign
+from abtestools.test import Metric
+
+data = pd.read_csv("tests/cookie_cats.txt", delimiter=",")
+
+audience = Audience(
+    users=data["userid"], group_mapping=dict(zip(data["userid"], data["version"]))
+)
+
+campaign = Campaign(
+    audience=audience,
+    metrics=[
+        Metric(name="retention_1", type="discrete"),
+        Metric(name="retention_7", type="discrete"),
+    ],
+    date_range=[
+        datetime.datetime.today() - datetime.timedelta(days=x) for x in range(10)
+    ],
+)
+
+
+def extract_data(date, metric_column: str, convert_bool: bool = True) -> dict:
+    # Logic for each date calculation should be added here
+    if convert_bool:
+        data[metric_column] = data[metric_column].astype(int)
+    return dict(zip(data["userid"], data[metric_column]))
+
+
+for res in campaign.backfill(
+    metric=Metric(name="retention_1", type="discrete"),
+    extract_data=extract_data,
+    metric_column="retention_1",
+):
+    print(res)
+
+```
 
  
 <!-- ROADMAP -->

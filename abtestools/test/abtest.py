@@ -70,23 +70,38 @@ class Test:
         self.data = data
 
     def significance(self, use_uuid: bool = False) -> tuple[float, float, Any]:
+        """
+        Calculate the Statistical Significance of the Test.
+        -----------------
+        ### Parameters:
+        - use_uuid: Boolean to use the uuid as user reference. If False, the user identifier will be used instead
+
+        ### Outputs
+        - Tuple (
+            - p value: p value of the test
+            - statistic: statistical result of the test
+            - confidence interval 
+        )
+        """
         test = list(filter(lambda x: x.group == "test", self.audience.users))
         control = list(filter(lambda x: x.group == "control", self.audience.users))
 
         identifier = "uuid" if use_uuid else "identifier"
 
-        test_data = {
-            k: v
-            for k, v in self.data.items()
-            if k in list(map(lambda x: getattr(x, identifier), test))
-        }
-        control_data = {
-            k: v
-            for k, v in self.data.items()
-            if k in list(map(lambda x: getattr(x, identifier), control))
-        }
+        test_data = pd.DataFrame({"user_id": [*test]})
+        test_data["group"] = "test"
+        test_data["user_id"] = (
+            test_data["user_id"].apply(lambda x: getattr(x, identifier)).astype(str)
+        )
+        test_data["metric"] = test_data["user_id"].map(self.data)
+        control_data = pd.DataFrame({"user_id": [*control]})
+        control_data["group"] = "control"
+        control_data["user_id"] = (
+            control_data["user_id"].apply(lambda x: getattr(x, identifier)).astype(str)
+        )
+        control_data["metric"] = control_data["user_id"].map(self.data)
 
-        result = ttest_ind(a=list(test_data.values()), b=list(control_data.values()))
+        result = ttest_ind(a=test_data['metric'].to_list(), b=control_data['metric'].to_list())
         return (
             float(result.pvalue),
             float(result.statistic),

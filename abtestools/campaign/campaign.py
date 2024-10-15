@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Callable, Generator, Iterable, Union
+from typing import Any, Callable, Generator, Iterable, Optional, Union
 
 import pandas as pd
 
@@ -12,11 +12,25 @@ class CampaignError(Exception):
 
 
 class Campaign:
+    """
+    ## Description
+    Class meant to organise the tests and audiences of a specific Marketing Campaign
+
+    -------------------
+    ### Parameters
+    - audience: Audience object containing the test and control groups
+    - metrics: Iterable of Metric objects containing the target metrics of the campaign
+    - date_range: [Optional] Date range for the campaign evaluation
+
+    ### Methods
+    - calculate_metrics: Returns a TestResult object with the results of the AB Test
+    - backfill: If the metric is date-dependant, the backfill method returns a generator with the results of each date.
+    """
     def __init__(
         self,
         audience: Audience,
         metrics: Iterable[Metric],
-        date_range: list[datetime.datetime],
+        date_range: Optional[list[datetime.datetime]] = None,
         **kwargs
     ) -> None:
 
@@ -49,6 +63,8 @@ class Campaign:
         *args,
         **kwargs
     ) -> Generator[TestResult, Any, Any]:
+        if not self.dates:
+            raise CampaignError("Backfill needs the date_range parameter to be set")
         for date in self.dates:
             data = extract_data(date, *args, **kwargs)
             yield Test(self.audience, metric.type, data).test_results()

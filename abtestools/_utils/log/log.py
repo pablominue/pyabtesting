@@ -29,9 +29,7 @@ COLORS = [
 class PabLog:
     """Logger"""
 
-    def __init__(
-        self, log_name: str = "Logger", __format: str = "- %(message)s"
-    ) -> None:
+    def __init__(self, log_name: str = "Logger", __format: str = "- %(message)s") -> None:
         """Logger Constructor"""
         self.avaliable_colors = []
         self.rich_handler = RichHandler(rich_tracebacks=True)

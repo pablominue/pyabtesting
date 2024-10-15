@@ -1,6 +1,6 @@
 fmt:
-	black abtestools
-	isort abtestools
+	black -l 99 abtestools
+	isort -l 99 abtestools
 
 test:
 	python -m pytest . -v -s --verbose

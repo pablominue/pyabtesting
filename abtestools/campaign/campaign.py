@@ -26,6 +26,7 @@ class Campaign:
     - calculate_metrics: Returns a TestResult object with the results of the AB Test
     - backfill: If the metric is date-dependant, the backfill method returns a generator with the results of each date.
     """
+
     def __init__(
         self,
         audience: Audience,

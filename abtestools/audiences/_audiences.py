@@ -38,9 +38,7 @@ def calculate_sample_size(
     p = baseline_conversion_rate
     delta = min_detectable_effect
 
-    required_sample_size_per_group = (
-        2 * (z_alpha + z_beta) ** 2 * p * (1 - p)
-    ) / delta**2
+    required_sample_size_per_group = (2 * (z_alpha + z_beta) ** 2 * p * (1 - p)) / delta**2
     required_sample_size_per_group = math.ceil(
         required_sample_size_per_group
     )  # Round up to nearest integer
@@ -134,9 +132,7 @@ class Audience:
         group_mapping: Optional[dict[Any, Literal["test", "control"]]] = None,
     ) -> None:
 
-        self.users: list[User] = [
-            User(identifier=user, uuid=uuid.uuid4()) for user in users
-        ]
+        self.users: list[User] = [User(identifier=user, uuid=uuid.uuid4()) for user in users]
         if group_mapping:
             try:
                 for u in self.users:
@@ -165,9 +161,7 @@ class Audience:
             )
         )
         for u in self.users:
-            u.group = asign_group_from_uuid(
-                u.uuid, control_threshold=control_group_ratio
-            )
+            u.group = asign_group_from_uuid(u.uuid, control_threshold=control_group_ratio)
         self.users = sorted(self.users)
         return self
 

@@ -80,7 +80,7 @@ class Test:
         - Tuple (
             - p value: p value of the test
             - statistic: statistical result of the test
-            - confidence interval 
+            - confidence interval
         )
         """
         test = list(filter(lambda x: x.group == "test", self.audience.users))
@@ -101,7 +101,7 @@ class Test:
         )
         control_data["metric"] = control_data["user_id"].map(self.data)
 
-        result = ttest_ind(a=test_data['metric'].to_list(), b=control_data['metric'].to_list())
+        result = ttest_ind(a=test_data["metric"].to_list(), b=control_data["metric"].to_list())
         return (
             float(result.pvalue),
             float(result.statistic),

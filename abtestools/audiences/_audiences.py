@@ -2,7 +2,7 @@ import hashlib
 import math
 import uuid
 from functools import total_ordering
-from typing import Any, Iterable, Literal, Optional, Union
+from typing import Any, Iterable, Literal, Optional, Union, Callable
 
 import pandas as pd
 from pydantic.main import BaseModel
@@ -57,6 +57,12 @@ def calculate_sample_size(
 
     return control_group_size, test_group_size, required_sample_size_per_group
 
+def is_uuid(identifier: str) -> bool:
+    try:
+        uu = uuid.UUID(identifier)
+        return True
+    except:
+        return False
 
 @total_ordering
 class User(BaseModel):
@@ -131,15 +137,25 @@ class Audience:
         users: Iterable[Any],
         group_mapping: Optional[dict[Any, Literal["test", "control"]]] = None,
     ) -> None:
-
-        self.users: list[User] = [User(identifier=user, uuid=uuid.uuid4()) for user in users]
+        if all(list(map(is_uuid, users))):
+            self._users: list[User] = [User(identifier=user, uuid=uuid.UUID(user)) for user in users]
+        else:
+            self._users: list[User] = [User(identifier=user, uuid=uuid.uuid4()) for user in users]
         if group_mapping:
             try:
-                for u in self.users:
+                for u in self._users:
                     u.group = group_mapping.get(u.identifier)
             except Exception:
                 lg.log.warning("Could not Map the Groups")
 
+    @property
+    def users(self):
+        return self._users
+
+    @users.setter
+    def users(self) -> list[User]:
+        raise Exception("Users can not be modified once the audience is set")
+    
     def assign_groups(
         self,
         baseline_conversion_rate=0,
@@ -160,25 +176,45 @@ class Audience:
                 total_users=total_users,
             )
         )
-        for u in self.users:
+        for u in self._users:
             u.group = asign_group_from_uuid(u.uuid, control_threshold=control_group_ratio)
-        self.users = sorted(self.users)
+        self._users = sorted(self._users)
         return self
+    
+    def get(
+        self,        
+        group: Literal['all', 'test', 'control'] = 'all',
+        identifier: Any = 'all',
+        uuid_identifier: str = 'all'
+    ) -> list[User]:
+        users = []
+        if group != 'all':
+            users = list(filter(lambda x: x.group == group, self._users))
+        if identifier != 'all':
+            users = list(filter(lambda x: x.identifier == identifier))
+        if uuid_identifier != 'all':
+            users = list(filter(lambda x: str(x.uuid) == uuid_identifier))
+        
+        return users
 
+    def apply(self, function: Callable[..., Any]) -> 'Audience':
+        self._users = list(map(function, self._users))
+        return self
+    
     def invert_groups(self) -> "Audience":
-        self.users = list(map(lambda x: x.reverse_group), self.users)
+        self._users = list(map(lambda x: x.reverse_group), self._users)
 
     def __len__(self) -> Union[float, int]:
-        return len(self.users)
+        return len(self._users)
 
     def __dict__(self) -> dict:
-        return {u.uuid: u.group for u in self.users}
+        return {u.uuid: u.group for u in self._users}
 
     def __str__(self) -> str:
         return str(self.__dict__())
 
     def __sizeof__(self) -> int:
-        return len(self.users)
+        return len(self._users)
 
     def __getitem__(self, item):
-        return self.users[item]
+        return self._users[item]
